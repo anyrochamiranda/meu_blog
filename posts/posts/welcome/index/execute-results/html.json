@@ -1,0 +1,12 @@
+{
+  "hash": "f1878d8a9e6a8ecdea6cfc9af924427d",
+  "result": {
+    "engine": "jupyter",
+    "markdown": "---\ntitle: \"Frota de ônibus\"\nauthor: \"Anielly Miranda\"\ndate: \"2025-11-20\"\ncategories: [code, mapas,]\njupyter: python3\n---\n\n",
+    "supporting": [
+      "index_files"
+    ],
+    "filters": [],
+    "includes": {}
+  }
+}

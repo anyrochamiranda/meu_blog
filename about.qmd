@@ -1,0 +1,17 @@
+---
+title: "Sobre o meu blog"
+about:
+  template: jolla
+  links:
+    
+    - icon: linkedin
+      text: LinkedIn
+      href: https://linkedin.com
+    - icon: github
+      text: Github
+      href: https://github.com
+
+---
+
+Este blog foi criado por uma estudante de Engenharia de Computação interessada em registrar sua trajetória na área. Aqui compartilho alguns dos projetos que desenvolvi ao longo do último semestre, mostrando um pouco dos meus conhecimentos e aprendizados. É um espaço simples para organizar minhas ideias e acompanhar minha própria evolução.
+

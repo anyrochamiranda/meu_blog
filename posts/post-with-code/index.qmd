@@ -1,0 +1,131 @@
+---
+title: "Cotação do dólar"
+author: "Anielly Miranda"
+date: "2025-11-20"
+categories: [Dólar,code]
+jupyter: python3
+---
+
+ Explorando a cotação do dólar!
+ Consulta a API do Banco Central.
+
+Nesta atividade eu criei uma rotina em Python que consulta a cotação do dólar comercial em um determinado mês e ano, usando a API do Banco Central (PTAX) e exibe os resultados em um gráfico de linha interativo com o Plotly.
+
+1. Instalei as bibliotecas necessárias
+
+Antes de tudo, precisei instalar algumas bibliotecas que o código utiliza:
+
+```{python}
+pip install requests pandas plotly
+
+```
+
+requests → para acessar a API do Banco Central
+
+pandas → para organizar os dados e tratar a tabela
+
+plotly → para criar o gráfico de linha interativo
+
+
+2. Função principal
+
+Depois disso, criei uma função chamada cotacao_dolar_periodo() que recebe uma string com o mês e o ano no formato "MMYYYY", por exemplo "082021".
+A função consulta as cotações de todos os dias daquele mês e mostra o gráfico.
+
+```{python}
+import requests
+import pandas as pd
+import calendar
+from datetime import datetime, timedelta
+import plotly.express as px
+
+def cotacao_dolar_periodo(mes_ano: str):
+    """
+    Recebe uma string no formato 'MMYYYY' (ex: '082021') e retorna um gráfico de linha
+    com a cotação do dólar comercial (compra e venda) no período.
+    """
+    # Converter o texto para data e descobrir o primeiro e o último dia do mês
+    data_inicial = datetime.strptime(mes_ano, "%m%Y")
+    ultimo_dia = calendar.monthrange(data_inicial.year, data_inicial.month)[1]
+    data_final = data_inicial.replace(day=ultimo_dia)
+
+    # Ajustar o formato da data para o padrão da API (MM-DD-YYYY)
+    data_inicial_str = data_inicial.strftime("%m-%d-%Y")
+    data_final_str = data_final.strftime("%m-%d-%Y")
+
+    # URL da API do Banco Central (Cotação do Dólar por Período)
+    url = (
+        "https://olinda.bcb.gov.br/olinda/servico/PTAX/versao/v1/odata/"
+        f"CotacaoDolarPeriodo(dataInicial=@dataInicial,dataFinalCotacao=@dataFinalCotacao)?"
+        f"@dataInicial='{data_inicial_str}'&@dataFinalCotacao='{data_final_str}'&"
+        "$format=json&$select=cotacaoCompra,cotacaoVenda,dataHoraCotacao"
+    )
+
+    # Fazer a requisição
+    response = requests.get(url)
+    if response.status_code != 200:
+        print("Erro ao acessar API do Banco Central.")
+        return None
+
+    dados = response.json().get("value", [])
+
+    # Converter o resultado em um DataFrame
+    df = pd.DataFrame(dados)
+    if df.empty:
+        print("Nenhum dado encontrado para o período informado.")
+        return None
+
+    # Converter a coluna de data e ordenar
+    df["dataHoraCotacao"] = pd.to_datetime(df["dataHoraCotacao"])
+    df = df.sort_values("dataHoraCotacao")
+
+    # Preencher dias sem cotação (feriados ou fins de semana) com o valor anterior
+    df = df.set_index("dataHoraCotacao").asfreq("D", method="ffill").reset_index()
+
+    # Criar o gráfico com Plotly
+    fig = px.line(
+        df,
+        x="dataHoraCotacao",
+        y=["cotacaoCompra", "cotacaoVenda"],
+        title=f"Cotação do Dólar - {data_inicial.strftime('%B/%Y')}",
+        labels={
+            "dataHoraCotacao": "Data",
+            "value": "Cotação (R$)",
+            "variable": "Tipo de Cotação"
+        }
+    )
+
+    # Ajustes visuais
+    fig.update_layout(
+        title_x=0.5,
+        legend_title_text="",
+        template="plotly_white"
+    )
+
+    # Exibir o gráfico
+    fig.show()
+
+```
+
+3. Executando o código
+
+Para testar, basta chamar a função passando o mês e o ano desejados:
+
+```{python}
+cotacao_dolar_periodo("082021")
+
+```
+
+Isso vai gerar um gráfico interativo mostrando a variação da cotação de compra e venda do dólar ao longo de agosto de 2021.
+
+4. O que o código faz automaticamente
+
+Calcula o primeiro e o último dia do mês informado.
+
+Monta a URL da API PTAX do Banco Central com essas datas.
+
+Busca as cotações diárias de compra e venda.
+
+Preenche dias sem cotação (como finais de semana e feriados) com o valor do dia anterior.
+
+Cria um gráfico interativo com as duas linhas (compra e venda).
